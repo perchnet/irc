@@ -1,0 +1,45 @@
+---
+#######
+# irc/docker-compose.yaml
+#######
+networks:
+  mediabox:
+services:
+  znc:
+    hostname: znc.internal.ibeep.com
+    networks:
+      mediabox:
+    image: lscr.io/linuxserver/znc:latest
+    container_name: znc
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/New_York
+    volumes:
+      - /var/mediabox/irc/znc/config:/config
+      - /var/mediabox/swag/config/keys/cert.crt:/config/cert.crt
+      - /var/mediabox/swag/config/keys/cert/key:/config/cert.key
+    ports:
+      - 6501:6501
+      - 6697:6501
+    restart: unless-stopped
+
+  thelounge:
+    hostname: thelounge.internal.ibeep.com
+    depends_on:
+     - znc
+    networks:
+      mediabox:
+    image: lscr.io/linuxserver/thelounge:latest
+    container_name: thelounge
+    links:
+       - znc:znc.internal.ibeep.com
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/New_York
+    volumes:
+      - /var/mediabox/irc/thelounge/config:/config
+    ports:
+      - 9000:9000
+    restart: unless-stopped
